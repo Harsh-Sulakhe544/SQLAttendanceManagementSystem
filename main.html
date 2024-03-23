@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance System</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Attendance Management System</h1>
+
+    <form id="attendanceForm">
+        <label for="studentId">Student ID:</label>
+        <input type="text" id="studentId" required>
+
+        <label for="courseId">Course:</label>
+        <select id="courseId" required>
+            <!-- Populate this dropdown dynamically from the database using JavaScript -->
+        </select>
+
+        <label for="instructorId">Instructor:</label>
+        <select id="instructorId" required>
+            <!-- Populate this dropdown dynamically from the database using JavaScript -->
+        </select>
+
+        <label for="attendanceDate">Date:</label>
+        <input type="date" id="attendanceDate" required>
+
+        <button type="button" onclick="markAttendance()">Mark Attendance</button>
+    </form>
+
+    <h2>Attendance Records</h2>
+    <table id="attendanceTable">
+        <thead>
+            <tr>
+                <th>Student ID</th>
+                <th>Course</th>
+                <th>Instructor</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Attendance records will be dynamically populated here -->
+        </tbody>
+    </table>
+
+    <script>
+        const courses = [{ id: 1, name: 'AIML' }, { id: 2, name: 'DBMS' }, 
+        {id: 3, name: 'Operating Systems'}, {id:4, name:'Computer Networking'}, {id:5, name: 'ATCD'} ];
+        const instructors = [{ id: 1, name: 'Rahul' }, { id: 2, name: 'Rajat' }, 
+        {id: 3, name: 'Shankar'}, {id:4, name:'Sham'}, {id:5, name: 'Kumar'} ];
+
+        function populateDropdowns() {
+            const courseDropdown = document.getElementById('courseId');
+            const instructorDropdown = document.getElementById('instructorId');
+
+            courses.forEach(course => {
+                const option = document.createElement('option');
+                option.value = course.id;
+                option.textContent = course.name;
+                courseDropdown.appendChild(option);
+            });
+
+            instructors.forEach(instructor => {
+                const option = document.createElement('option');
+                option.value = instructor.id;
+                option.textContent = instructor.name;
+                instructorDropdown.appendChild(option);
+            });
+        }
+
+        function markAttendance() {
+            const studentId = document.getElementById('studentId').value;
+            const courseId = document.getElementById('courseId').value;
+            const instructorId = document.getElementById('instructorId').value;
+            const attendanceDate = document.getElementById('attendanceDate').value;
+
+            if (studentId === "" || courseId === "" || instructorId === "" || attendanceDate === "") {
+                alert("Please fill in all the required fields.");
+                return;
+            }
+
+            if (isNaN(studentId)){
+                alert("Please Check the type of Student ID, It Should be A Number .");
+                return;
+            }
+
+            const tableBody = document.getElementById('attendanceTable').getElementsByTagName('tbody')[0];
+            const newRow = tableBody.insertRow(tableBody.rows.length);
+            const cell1 = newRow.insertCell(0);
+            const cell2 = newRow.insertCell(1);
+            const cell3 = newRow.insertCell(2);
+            const cell4 = newRow.insertCell(3);
+
+            cell1.textContent = studentId;
+            cell2.textContent = courses.find(course => course.id == courseId).name;
+            cell3.textContent = instructors.find(instructor => instructor.id == instructorId).name;
+            cell4.textContent = attendanceDate;
+
+            // Save data to localStorage
+            const savedData = JSON.parse(localStorage.getItem('attendanceData')) || [];
+            savedData.push({
+                studentId,
+                courseId,
+                instructorId,
+                attendanceDate,
+            });
+            localStorage.setItem('attendanceData', JSON.stringify(savedData));
+        }
+
+        function loadSavedData() {
+            const savedData = JSON.parse(localStorage.getItem('attendanceData')) || [];
+            const tableBody = document.getElementById('attendanceTable').getElementsByTagName('tbody')[0];
+
+            savedData.forEach(data => {
+                const newRow = tableBody.insertRow(tableBody.rows.length);
+                const cell1 = newRow.insertCell(0);
+                const cell2 = newRow.insertCell(1);
+                const cell3 = newRow.insertCell(2);
+                const cell4 = newRow.insertCell(3);
+
+                cell1.textContent = data.studentId;
+                cell2.textContent = courses.find(course => course.id == data.courseId).name;
+                cell3.textContent = instructors.find(instructor => instructor.id == data.instructorId).name;
+                cell4.textContent = data.attendanceDate;
+            });
+        }
+
+        // Clear data on localStorage.clear()
+        // in the chrome , goto fn-12 and console => localStorage.clear() , then 
+        // u type localStorage ==> undefined ==> refresh the page ==> data is deleted 
+        window.addEventListener('storage', (event) => {
+            // delete the key-attendanceData
+            if (event.key === 'attendanceData') {
+                const tableBody = document.getElementById('attendanceTable').getElementsByTagName('tbody')[0];
+                tableBody.innerHTML = ''; // Clear the table
+                loadSavedData(); // Load fresh data
+            }
+        });
+
+        // Call the function to populate dropdowns on page load
+        populateDropdowns();
+        // Load saved data on page load
+        loadSavedData();
+    </script>
+</body>
+</html>
